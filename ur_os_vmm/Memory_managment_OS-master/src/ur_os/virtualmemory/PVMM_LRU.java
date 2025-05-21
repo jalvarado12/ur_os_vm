@@ -25,9 +25,11 @@ public class PVMM_LRU extends ProcessVirtualMemoryManager{
     temp.removeLast(); //not count the page we have to add
 
     for(Integer m: temp) {
+        
         if(!pages.contains(m)) {
             pages.add(m);
         }
+        
         if(pages.size() > loaded) {
             pages.remove(recent.getFirst());
             recent.removeFirst();
