@@ -22,10 +22,9 @@ public class PVMM_LRU extends ProcessVirtualMemoryManager{
     LinkedList<Integer> recent = new LinkedList<Integer>(); //carries the order of recents
     LinkedList<Integer> pages = new LinkedList<Integer>(); //pages that are in frames
     
-    temp.removeLast(); //In order to not count the page we have to add
+    temp.removeLast(); //not count the page we have to add
 
     for(Integer m: temp) {
-        //pages count part
         if(!pages.contains(m)) {
             pages.add(m);
         }
@@ -34,7 +33,6 @@ public class PVMM_LRU extends ProcessVirtualMemoryManager{
             recent.removeFirst();
         }
         
-        //recent part
         if(!recent.contains(m)) {
             recent.add(m);
         } else {
