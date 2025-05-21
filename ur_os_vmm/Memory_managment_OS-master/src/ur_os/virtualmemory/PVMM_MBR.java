@@ -12,8 +12,9 @@ import java.util.Map;
  *
  * @author juans.alvarado
  */
+
 public class PVMM_MBR extends ProcessVirtualMemoryManager {
-    private static final double DECAY = 0.9; // Factor de decaimiento exponencial
+    private static final double DECAY = 0.9; //Exponential decay
 
     public PVMM_MBR() {
         type = ProcessVirtualMemoryManagerType.MBR;
@@ -22,7 +23,7 @@ public class PVMM_MBR extends ProcessVirtualMemoryManager {
     @Override
     public int getVictim(LinkedList<Integer> memoryAccesses, int loaded) {
         LinkedList<Integer> temp = new LinkedList<>(memoryAccesses);
-        temp.removeLast(); // Ignorar el acceso que está por añadirse
+        temp.removeLast(); // Ignore the one to add
 
         LinkedList<Integer> pages = new LinkedList<>();
         Map<Integer, Integer> frequency = new HashMap<>();
@@ -32,12 +33,12 @@ public class PVMM_MBR extends ProcessVirtualMemoryManager {
         for (Integer m : temp) {
             time++;
 
-            // Agregar página si no está
+            
             if (!pages.contains(m)) {
                 pages.add(m);
             }
 
-            // Reemplazar si se supera el límite de marcos
+            
             if (pages.size() > loaded) {
                 Integer victim = getMinMomentum(frequency, lastUsed, pages, time);
                 pages.remove(victim);
@@ -45,7 +46,7 @@ public class PVMM_MBR extends ProcessVirtualMemoryManager {
                 lastUsed.remove(victim);
             }
 
-            // Actualizar frecuencia y último acceso
+            // Actualize frequency and last access
             frequency.put(m, frequency.getOrDefault(m, 0) + 1);
             lastUsed.put(m, time);
         }
