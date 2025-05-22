@@ -1,76 +1,71 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ur_os.virtualmemory;
 
 import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- *
- * @author juans.alvarado
- */
+public class PVMM_WFV extends ProcessVirtualMemoryManager {
+    private int waveCount = 0; // Para alternar la dirección de búsqueda
 
-public class PVMM_MBR extends ProcessVirtualMemoryManager {
-    private static final double DECAY = 0.9; //Exponential decay
-
-    public PVMM_MBR() {
-        type = ProcessVirtualMemoryManagerType.MBR;
+    public PVMM_WFV() {
+        type = ProcessVirtualMemoryManagerType.WFV; // Necesitas agregar esta enumeración
     }
 
     @Override
     public int getVictim(LinkedList<Integer> memoryAccesses, int loaded) {
         LinkedList<Integer> temp = new LinkedList<>(memoryAccesses);
-        temp.removeLast(); // Ignore the one to add
+        temp.removeLast(); // Ignorar el que se va a agregar
 
         LinkedList<Integer> pages = new LinkedList<>();
-        Map<Integer, Integer> frequency = new HashMap<>();
         Map<Integer, Integer> lastUsed = new HashMap<>();
         int time = 0;
 
         for (Integer m : temp) {
             time++;
 
-            
             if (!pages.contains(m)) {
                 pages.add(m);
             }
 
-            
             if (pages.size() > loaded) {
-                Integer victim = getMinMomentum(frequency, lastUsed, pages, time);
+                Integer victim = getWaveVictim(pages, lastUsed, time);
                 pages.remove(victim);
-                frequency.remove(victim);
                 lastUsed.remove(victim);
             }
 
-            // Actualize frequency and last access
-            frequency.put(m, frequency.getOrDefault(m, 0) + 1);
             lastUsed.put(m, time);
         }
 
-        return getMinMomentum(frequency, lastUsed, pages, time);
+        waveCount++; // Alternar dirección para la próxima vez
+        return getWaveVictim(pages, lastUsed, time);
     }
 
-    private int getMinMomentum(Map<Integer, Integer> frequency, Map<Integer, Integer> lastUsed, LinkedList<Integer> pages, int currentTime) {
-        double minMomentum = Double.MAX_VALUE;
+    private int getWaveVictim(LinkedList<Integer> pages, Map<Integer, Integer> lastUsed, int currentTime) {
+        int n = pages.size();
+        int center = n / 2;
+        int direction = waveCount % 2 == 0 ? -1 : 1;
+
         int victim = -1;
+        int maxAge = -1;
 
-        for (Integer page : pages) {
-            int freq = frequency.getOrDefault(page, 0);
+        for (int offset = 0; offset < n; offset++) {
+            int index = center + direction * offset;
+
+            // Alterna izquierda y derecha desde el centro
+            if (direction == -1) index = center - offset;
+            else index = center + offset;
+
+            if (index < 0 || index >= n) continue;
+
+            Integer page = pages.get(index);
             int age = currentTime - lastUsed.getOrDefault(page, 0);
-            double momentum = freq * Math.pow(DECAY, age);
 
-            if (momentum < minMomentum) {
-                minMomentum = momentum;
+            if (age > maxAge) {
+                maxAge = age;
                 victim = page;
             }
         }
 
         return victim;
     }
-    
-    
 }
